@@ -1,0 +1,44 @@
+# The "if… then…" rules. One source for the deck slide, the cheat sheet and the
+# "Rules" tab of the prompts page. {project} and {skill} are replaced with the
+# names of the workshop's tool (see wk.py TOOL_NAMES). For a non-English
+# workshop, Claude writes a translated rules.yaml into the workshop folder.
+- id: long-chat
+  if: The chat got long and the answers get worse.
+  then: Ask for a summary. Start a new chat with it.
+  concept: context-rot
+  prompt: >-
+    Summarise this conversation so I can continue in a new chat. Include: the goal,
+    the decisions we made, facts and numbers we agreed on, open questions, and the
+    files I shared. Use short bullet points.
+- id: same-summary
+  if: You paste the same summary into every new chat.
+  then: Create a {project} with fixed instructions and files.
+  concept: context-window
+- id: same-procedure
+  if: You repeat the same procedure every week.
+  then: Write it once as a {skill}.
+  concept: literacy-is-context
+  prompt: >-
+    Turn what we just did into a step-by-step procedure I can reuse: the inputs,
+    the steps, the checks, and the output format. Ask me about anything that
+    changes from one time to the next.
+- id: numbers
+  if: The answer has numbers, names or dates.
+  then: Give the source. Ask for a quote and a page for each claim.
+  concept: four-checks
+  prompt: >-
+    Answer only from the attached document. For each claim, quote the exact
+    sentence and give the page. If the document does not say it, write "not found"
+    instead of guessing.
+- id: new-topic
+  if: You change topic.
+  then: Open a new chat.
+  concept: context-rot
+- id: critical-instruction
+  if: An instruction is critical.
+  then: Put it at the start or the end of your request.
+  concept: lost-in-the-middle
+- id: confidential
+  if: The file holds personal or confidential data.
+  then: Check the company's rules before you attach it.
+  concept: literacy-is-context

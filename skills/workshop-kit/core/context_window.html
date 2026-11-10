@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The context window, in practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F4; --paper:#FFFFFF; --ink:#1B2330; --muted:#5B6675; --line:#CBD2DB;
+  --instr:#3C5A99; --user:#2F8F83; --ai:#8A6FB0; --doc:#C9A227;
+  --noise:#9AA3AE; --dist:#D1495B; --star:#1F7A3D; --sum:#4F6D7A;
+  --empty:#E2E7ED;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151A22; --paper:#1E2530; --ink:#E6EAF0; --muted:#9AA5B4; --line:#344052;
+    --instr:#6F8DD1; --user:#4DB3A6; --ai:#AE95D6; --doc:#D9B845;
+    --noise:#6F7A87; --dist:#E36A7A; --star:#45B06A; --sum:#7C9BA8; --empty:#262E3A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151A22; --paper:#1E2530; --ink:#E6EAF0; --muted:#9AA5B4; --line:#344052;
+  --instr:#6F8DD1; --user:#4DB3A6; --ai:#AE95D6; --doc:#D9B845;
+  --noise:#6F7A87; --dist:#E36A7A; --star:#45B06A; --sum:#7C9BA8; --empty:#262E3A;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:17px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding:40px 20px 64px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.1;margin:0}
+h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:700;letter-spacing:-0.02em;max-width:18ch}
+h2{font-size:1.7rem;font-weight:700;margin-bottom:12px}
+h3{font-size:1.15rem;font-weight:700;margin-bottom:6px}
+p{margin:0 0 12px;max-width:68ch}
+.lede{font-size:1.15rem;color:var(--muted);margin-top:14px}
+a{color:var(--instr)}
+section{margin-top:44px}
+
+/* the window strip: the memorable thing */
+.meter-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.count{font-family:"Bricolage Grotesque",sans-serif;font-size:1.6rem;font-weight:700}
+.count small{font-size:1rem;color:var(--muted);font-weight:500}
+.frame{position:relative;border:3px solid var(--ink);border-radius:14px;padding:6px;background:var(--paper)}
+.strip{display:flex;height:96px;gap:3px;background:repeating-linear-gradient(135deg,var(--empty) 0 8px,transparent 8px 16px);border-radius:8px;overflow:hidden}
+.blk{flex-shrink:0;border-radius:5px;display:flex;align-items:flex-end;justify-content:flex-start;
+  color:#fff;font-size:12px;font-weight:700;padding:5px;overflow:hidden;white-space:nowrap;
+  transition:flex-basis .35s ease, opacity .35s ease;min-width:4px;position:relative}
+.blk.new{animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:scaleY(.6)}to{opacity:1;transform:none}}
+.blk.pinned::before{content:"📌";position:absolute;top:4px;left:5px;font-size:12px}
+.edge{position:absolute;top:-12px;font-size:12px;background:var(--bg);padding:0 6px;color:var(--muted)}
+.edge.l{left:14px}.edge.r{right:14px}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.sim{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-top:22px}
+@media (max-width:760px){.sim{grid-template-columns:1fr}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:420px){.btns{grid-template-columns:1fr}}
+button{font:inherit;cursor:pointer;border-radius:9px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);
+  padding:9px 11px;text-align:left;display:flex;gap:9px;align-items:flex-start;line-height:1.25}
+button:hover{border-color:var(--ink)}
+button:focus-visible{outline:3px solid var(--instr);outline-offset:2px}
+button .t{font-size:12.5px;color:var(--muted);display:block;margin-top:2px}
+button .sw{margin-top:4px;flex-shrink:0}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.actions button{flex:1;min-width:140px;justify-content:center;text-align:center;background:var(--paper)}
+.actions button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.log{margin-top:14px;padding:12px 14px;border-left:4px solid var(--ink);background:var(--bg);border-radius:0 8px 8px 0;font-size:15.5px;min-height:70px}
+.status{font-size:15.5px;padding:10px 12px;border-radius:8px;background:var(--bg);margin-bottom:14px}
+.gauge{height:14px;border-radius:7px;background:var(--empty);overflow:hidden;margin:8px 0 4px}
+.gauge i{display:block;height:100%;transition:width .4s ease,background .4s ease}
+.note{font-size:13.5px;color:var(--muted)}
+.dropped{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:22px}
+.chip{font-size:12px;padding:2px 7px;border-radius:5px;background:var(--empty);color:var(--muted);text-decoration:line-through}
+
+.findings{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+@media (max-width:700px){.findings{grid-template-columns:1fr}}
+.finding{border-top:3px solid var(--ink);padding-top:12px}
+.finding .try{font-size:14px;color:var(--muted);margin-top:6px}
+.takeaway{margin-top:24px;background:var(--ink);color:var(--paper);border-radius:12px;padding:20px 22px}
+.takeaway p{margin:0 0 8px}
+.takeaway ul{margin:6px 0 0;padding-left:20px}
+.takeaway li{margin-bottom:6px}
+footer{margin-top:40px;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>The context window is a desk of fixed size</h1>
+  <p class="lede">Everything the AI considers in a conversation has to fit on it: the instructions, your messages, its answers and your documents. Add things below and watch what happens when the desk fills up.</p>
+</header>
+
+<section aria-label="Simulator">
+  <div class="meter-head">
+    <div class="count"><span id="used">0</span> <small>of <span id="cap">10,000</span> tokens used</small></div>
+    <div class="note">A toy window of 10,000 tokens. Real models have much larger windows.</div>
+  </div>
+  <div class="frame">
+    <span class="edge l">oldest</span><span class="edge r">newest</span>
+    <div class="strip" id="strip" role="img" aria-label="Contents of the context window"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+
+  <div class="sim">
+    <div class="panel">
+      <h3>Add to the conversation</h3>
+      <div class="btns" id="btns"></div>
+      <div class="actions">
+        <button id="sum">Summarise conversation</button>
+        <button id="reset" class="primary">New conversation</button>
+      </div>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+
+    <div class="panel">
+      <h3>The important fact</h3>
+      <div class="status" id="star"></div>
+
+      <h3>Estimated reliability</h3>
+      <div class="gauge"><i id="gbar"></i></div>
+      <div><strong id="glabel"></strong></div>
+      <p class="note">Illustrative: this meter follows the direction of the study below, not its numbers. The study publishes no formula like this one.</p>
+
+      <h3 style="margin-top:16px">Dropped out of the window</h3>
+      <p class="note" style="margin:0">The AI no longer sees these items.</p>
+      <div class="dropped" id="dropped"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>And "context rot"?</h2>
+  <p>Fitting in the window is not the same as being used well. In July 2025, Chroma tested 18 language models on deliberately simple tasks and changed only one thing: the amount of text in the input. They called the effect <em>context rot</em>: the fuller the window, the less reliable the model.</p>
+
+  <div class="findings">
+    <div class="finding">
+      <h3>More text, less reliable</h3>
+      <p>In every experiment, performance dropped as the input got longer, even though the task stayed the same.</p>
+      <p class="try">In the simulator: paste a few documents and watch the meter drop.</p>
+    </div>
+    <div class="finding">
+      <h3>Similar information confuses it</h3>
+      <p>Sentences that look like the right answer but are wrong pulled performance down. One already hurt; several hurt more, and the effect grew with input length.</p>
+      <p class="try">In the simulator: add "my sister's flight" a few times.</p>
+    </div>
+    <div class="finding">
+      <h3>Vague questions suffer most</h3>
+      <p>When the question and the answer do not share the same words, and the model has to infer the link, performance fell faster with long inputs.</p>
+      <p class="try">In practice: ask directly and specifically.</p>
+    </div>
+    <div class="finding">
+      <h3>The short version beats the full one</h3>
+      <p>In a test with chat histories, models did much better with only the relevant part (about 300 tokens) than with the whole history (about 113,000 tokens).</p>
+      <p class="try">In the simulator: compare "Summarise conversation" with letting everything pile up.</p>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <p><strong>What this changes in your day-to-day</strong></p>
+    <ul>
+      <li>Changed topic? Open a new conversation instead of continuing the old one.</li>
+      <li>Paste only the part of the document that matters, not the whole file.</li>
+      <li>Avoid leaving old, contradictory versions of the same information in the chat.</li>
+      <li>In long chats, ask for a summary and continue in a new chat from it.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Source of the results: Hong, Troynikov and Huber, <a href="https://www.trychroma.com/research/context-rot" target="_blank" rel="noopener">"Context Rot: How Increasing Input Tokens Impacts LLM Performance"</a>, Chroma, July 2025. The models tested were mid-2025 models; newer models can behave differently.</p>
+  <p>The simulator is a teaching simplification: token sizes are approximate, and each AI tool decides in its own way what to do when the window fills up.</p>
+</footer>
+</div>
+
+<script>
+const CAP = 10000;
+const TYPES = {
+  instr:{label:"Starting instructions",short:"Instructions",tokens:300,color:"var(--instr)",desc:"The rules the tool gives the AI"},
+  user:{label:"Your question",short:"You",tokens:150,color:"var(--user)",desc:"A short message from you"},
+  ai:{label:"AI answer",short:"AI",tokens:600,color:"var(--ai)",desc:"Answers take up space too"},
+  doc:{label:"Pasted document",short:"Document",tokens:3000,color:"var(--doc)",desc:"A long text or PDF"},
+  star:{label:"Important fact ★",short:"★ Flight on the 12th",tokens:100,color:"var(--star)",desc:"\u201cMy flight is on the 12th\u201d"},
+  noise:{label:"Off-topic chat",short:"Off-topic",tokens:800,color:"var(--noise)",desc:"Something unrelated"},
+  dist:{label:"Similar information",short:"Flight on the 21st?",tokens:150,color:"var(--dist)",desc:"\u201cMy sister\u2019s flight is on the 21st\u201d"},
+  sum:{label:"Summary",short:"Summary",tokens:0,color:"var(--sum)",desc:""}
+};
+const ORDER = ["user","ai","doc","star","noise","dist"];
+let uid = 0;
+let blocks = [], dropped = [], lastNew = null;
+
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString(document.documentElement.lang || "en");
+
+function reset(){
+  blocks = [{id:++uid,type:"instr",tokens:TYPES.instr.tokens,pinned:true}];
+  dropped = []; lastNew = blocks[0].id;
+  say("New conversation. It already starts with the tool's instructions (📌), which usually stay pinned at the start. The window is almost empty.");
+  render();
+}
+const total = () => blocks.reduce((s,b)=>s+b.tokens,0);
+
+function add(type){
+  const b = {id:++uid,type,tokens:TYPES[type].tokens,pinned:false};
+  blocks.push(b); lastNew = b.id;
+  const out = [];
+  while(total() > CAP){
+    const i = blocks.findIndex(x=>!x.pinned);
+    if(i<0) break;
+    out.push(blocks.splice(i,1)[0]);
+  }
+  dropped = out.concat(dropped);
+  let msg = `Added: ${TYPES[type].label} (about ${fmt(b.tokens)} tokens).`;
+  if(out.length){
+    const lostStar = out.some(x=>x.type==="star");
+    msg += ` The window filled up, so ${out.length===1?"the oldest item dropped out":"the "+out.length+" oldest items dropped out"} to make room.`;
+    if(lostStar) msg += " The flight fact was one of them: the AI simply cannot see it now. If you ask for the date, it may make one up.";
+  } else if(type==="doc"){
+    msg += " Documents take up the most space. Even when they fit, they fill the window, and that tends to lower reliability.";
+  } else if(type==="dist"){
+    msg += " Now there is information that looks like the important fact but is wrong. The study shows this confuses models, even more when the window is full.";
+  } else if(type==="noise"){
+    msg += " Off-topic content does not help at all, but it takes up space and makes the important part harder to find.";
+  } else if(type==="ai"){
+    msg += " Notice: the AI's own answers count against the limit too.";
+  } else if(type==="star"){
+    msg += " This is the fact you want the AI to use later. Track it in the panel on the right.";
+  }
+  say(msg); render();
+}
+
+function summarize(){
+  const loose = blocks.filter(b=>!b.pinned);
+  if(loose.length < 2){ say("There is little to summarise. Add more items first."); return; }
+  const sumTok = Math.max(200, Math.round(loose.reduce((s,b)=>s+b.tokens,0)*0.12));
+  const hasStar = loose.some(b=>b.type==="star" || (b.type==="sum" && b.hasStar));
+  const b = {id:++uid,type:"sum",tokens:sumTok,pinned:false,hasStar};
+  const before = total();
+  blocks = blocks.filter(x=>x.pinned).concat([b]); lastNew = b.id;
+  let msg = `The conversation was summarised: from ${fmt(before)} to ${fmt(total())} tokens. There is much more room, and off-topic content and similar information no longer compete.`;
+  msg += hasStar ? " Here we assume the summary kept the flight date, but real summaries can lose details, so check." : "";
+  say(msg); render();
+}
+
+function reliability(){
+  const t = total(), fill = t/CAP;
+  const noise = blocks.filter(b=>b.type==="noise").reduce((s,b)=>s+b.tokens,0);
+  const d = blocks.filter(b=>b.type==="dist").length;
+  let s = 100 - 32*Math.pow(fill,1.4) - 18*(noise/Math.max(t,1)) - d*(5+12*fill);
+  return Math.max(10, Math.min(100, Math.round(s)));
+}
+
+function say(t){ $("log").textContent = t; }
+
+function render(){
+  const strip = $("strip"); strip.innerHTML = "";
+  blocks.forEach(b=>{
+    const el = document.createElement("div");
+    const T = TYPES[b.type];
+    el.className = "blk" + (b.pinned?" pinned":"") + (b.id===lastNew?" new":"");
+    el.style.flexBasis = (b.tokens/CAP*100) + "%";
+    el.style.background = T.color;
+    const pct = b.tokens/CAP;
+    el.textContent = pct > 0.07 ? (b.type==="sum" && b.hasStar ? "Summary (includes ★)" : T.short) : "";
+    el.title = `${T.label}: ~${fmt(b.tokens)} tokens`;
+    strip.appendChild(el);
+  });
+  const t = total();
+  $("used").textContent = fmt(t);
+  $("cap").textContent = fmt(CAP);
+
+  // star status
+  const inWin = blocks.some(b=>b.type==="star" || (b.type==="sum" && b.hasStar));
+  const wasDropped = dropped.some(b=>b.type==="star");
+  const d = blocks.filter(b=>b.type==="dist").length;
+  let s;
+  if(inWin){
+    s = "✅ The AI still sees: \u201cMy flight is on the 12th\u201d.";
+    if(d) s += ` But ${d} similar item${d>1?"s are":" is"} competing with it, which raises the risk that the AI picks the wrong one.`;
+  } else if(wasDropped){
+    s = "❌ The flight fact dropped out of the window. The AI has no way to know the date unless you repeat it.";
+  } else {
+    s = "Add the important fact (★) to track whether the AI can still see it.";
+  }
+  $("star").textContent = s;
+
+  // gauge
+  const r = reliability();
+  const g = $("gbar");
+  g.style.width = r + "%";
+  g.style.background = r>80 ? "var(--star)" : r>55 ? "var(--doc)" : "var(--dist)";
+  $("glabel").textContent = r>80 ? "High" : r>55 ? "Medium" : "Low";
+
+  // dropped
+  const dz = $("dropped"); dz.innerHTML = "";
+  if(!dropped.length){ dz.innerHTML = '<span class="note">Nothing yet.</span>'; }
+  dropped.slice(0,24).forEach(b=>{
+    const c = document.createElement("span"); c.className="chip"; c.textContent = TYPES[b.type].short; dz.appendChild(c);
+  });
+  if(dropped.length>24){ const c=document.createElement("span"); c.className="note"; c.textContent=`+${dropped.length-24}`; dz.appendChild(c); }
+}
+
+// build buttons and legend
+const btns = $("btns");
+ORDER.forEach(k=>{
+  const T = TYPES[k];
+  const b = document.createElement("button");
+  b.innerHTML = `<span class="sw" style="background:${T.color}"></span><span>${T.label}<span class="t">${T.desc} (~${fmt(T.tokens)} tokens)</span></span>`;
+  b.addEventListener("click",()=>add(k));
+  btns.appendChild(b);
+});
+const lg = $("legend");
+["instr","user","ai","doc","star","noise","dist","sum"].forEach(k=>{
+  const s = document.createElement("span");
+  s.innerHTML = `<i class="sw" style="background:${TYPES[k].color}"></i>${TYPES[k].label}`;
+  lg.appendChild(s);
+});
+$("sum").addEventListener("click",summarize);
+$("reset").addEventListener("click",reset);
+reset();
+</script>
+</body>
+</html>

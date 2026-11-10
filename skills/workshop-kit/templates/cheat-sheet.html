@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="{{ ws.language }}">
+<head>
+<meta charset="utf-8">
+<title>{{ ws.client }} · {{ L.cheat_sheet_title }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 14mm 14mm; }
+:root { --ink:#1F1B16; --soft:#5A524A; --accent:#9B2C2C; --border:#E4D8C4; --card:#FBF6EC; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); font: 13px/1.45 'Inter', system-ui, sans-serif; }
+.kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+h1 { font: 600 34px/1.1 'Fraunces', Georgia, serif; margin: 6px 0 16px; }
+table { width: 100%; border-collapse: collapse; }
+td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 14px; }
+td:first-child { color: var(--soft); width: 50%; }
+td:last-child { font-weight: 600; }
+tr:nth-child(odd) td { background: var(--card); }
+.box { margin-top: 14px; padding: 10px 14px; border-left: 4px solid var(--accent); background: var(--card); font-size: 13px; }
+h2 { font: 600 18px 'Fraunces', Georgia, serif; margin: 20px 0 8px; }
+ul.ex { margin: 0; padding-left: 18px; }
+ul.ex li { margin-bottom: 3px; }
+ul.ex span { color: var(--soft); }
+</style>
+</head>
+<body>
+  <div class="kicker">{{ ws.client }} · {{ L.cheat_sheet_title }}</div>
+  <h1>{{ L.rules }}</h1>
+  <table>{% for r in rules %}<tr><td>{{ r['if'] }}</td><td>{{ r.then }}</td></tr>{% endfor %}</table>
+  <div class="box"><b>{{ L.prompt_parts }}</b></div>
+  <div class="box"><b>{{ L.four_checks }}</b></div>
+  {% if exercises %}
+  <h2>{{ L.exercises_title }}</h2>
+  <ul class="ex">{% for x in exercises %}<li>{{ x.title }} <span>→ {{ x.rule_then }}</span></li>{% endfor %}</ul>
+  {% endif %}
+</body>
+</html>

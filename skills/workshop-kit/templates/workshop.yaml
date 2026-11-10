@@ -1,0 +1,50 @@
+# One per workshop, at <client>/workshop-<YYYY-MM>/workshop.yaml.
+# Intake fills it; every mode reads it. Empty strings mean "ask the instructor".
+client: ""
+slug: ""                       # <client>-<YYYY-MM>: folder, zip and Drive names
+date: ""                       # YYYY-MM-DD
+duration_min: 0
+language: en                   # from the instructor's words; else inferred from the intake files; ask if unclear
+tool: claude                   # claude | chatgpt | copilot: names in rules and steps
+presentation: claude-slides    # claude-slides | marp | <any presentation skill name>
+design_system: ""              # client design system artifact URL; empty = your default design system
+deck_url: ""                   # the Claude Slides artifact, once created
+form_url: ""                   # the Google Form responses sheet, if any
+contact: ""                    # client contact for the Gmail draft
+first_week: []                 # 5 short lines, Monday to Friday; page 1 of the guide
+approved:                      # dates written by `wk.py approve <part>`
+  slides: ""
+  exercises: ""
+  guides: ""
+pii_ok: []                     # exact strings the personal-data scan allows (e.g. the instructor's email)
+drive_link: ""                 # written by `wk.py ship`
+labels:                        # every student-facing word the scripts print; Claude translates these at intake
+  participants: participants
+  guide: guide
+  cheat_sheet: cheat-sheet
+  prompts: prompts
+  slides: slides
+  exercises: exercises
+  demos: demos
+  data: data
+  solution: solution
+  skills: skills
+  exercises_title: Exercises      # display text; the file-name labels above stay plain (no accents)
+  cheat_sheet_title: Cheat sheet
+  exercise: Exercise
+  steps: Steps
+  prompt: Prompt
+  done_when: Done when
+  note: Note
+  minutes: min
+  rule: Rule
+  rules: "If… then…"
+  base_prompts: Base prompts
+  start_here: Start here
+  first_week: Your first week with AI
+  days: [Mon, Tue, Wed, Thu, Fri]
+  copy: Copy
+  copied: Copied
+  search: Search prompts…
+  prompt_parts: "A good request has 5 parts: context · task · format · limits · example"
+  four_checks: "4 checks: quote and page · only the source · a second source · new chat"

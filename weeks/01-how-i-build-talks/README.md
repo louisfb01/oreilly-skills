@@ -34,3 +34,7 @@ Then review the plan, ask for the first draft, and send your feedback as one voi
 ## Make it yours
 
 The rules in the skill came from my corrections. [make-your-own.md](make-your-own.md) is a prompt that reads your past Claude Code or Codex threads, finds what you kept correcting, and writes your own version of the skill.
+
+## Lucas's side: workshop-kit
+
+In the same session, Lucas Soares showed [`workshop-kit`](../../skills/workshop-kit/), the skill behind Lucas's client workshops. It turns a client intake form into a deck, exercises, handouts and a shared folder, and it rebuilds the kit when a source changes. It needs `uv` and Chrome, plus the `gws` CLI for Google Sheets and Drive.

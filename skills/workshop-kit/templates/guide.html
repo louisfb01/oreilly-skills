@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="{{ ws.language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ ws.client }} · {{ L.prompts }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root { --cream:#F5EDE0; --card:#FBF6EC; --ink:#1F1B16; --soft:#5A524A; --accent:#9B2C2C; --accent-soft:#C9605F; --border:#E4D8C4;
+  --display:'Fraunces', Georgia, serif; --body:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; --mono:'JetBrains Mono', ui-monospace, Menlo, monospace; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--ink); font: 16px/1.55 var(--body); }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.15; }
+.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+header h1 { font-size: clamp(28px, 5vw, 40px); margin: 6px 0 4px; }
+header p { color: var(--soft); margin: 0; }
+.search { width: 100%; margin: 22px 0 10px; padding: 11px 14px; font: inherit; border: 1px solid var(--border); border-radius: 10px; background: #fff; color: var(--ink); }
+.tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.tabs button { font: inherit; font-weight: 600; background: none; border: 0; padding: 8px 0; color: var(--soft); cursor: pointer; border-bottom: 2px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+.card .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.card h2 { font-size: 22px; }
+.tag { font-size: 13px; color: var(--soft); }
+.tag b { color: var(--accent); font-weight: 600; }
+ol.steps { margin: 12px 0; padding-left: 22px; }
+ol.steps li { margin-bottom: 4px; }
+.pbox { position: relative; margin: 12px 0; }
+.pbox pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; font: 14px/1.55 var(--mono); background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 14px 16px; }
+.copy { margin-top: 8px; font: 600 14px var(--body); padding: 8px 16px; border-radius: 8px; border: 0; background: var(--ink); color: #fff; cursor: pointer; }
+.copy.done { background: #2f6b45; }
+.done-when { margin: 10px 0 0; padding: 10px 14px; background: #fff; border-radius: 8px; font-size: 15px; }
+.done-when b, .note b { color: var(--accent); }
+.note { font-size: 14px; color: var(--soft); margin: 8px 0 0; }
+.files { font: 13px var(--mono); color: var(--soft); margin-top: 8px; }
+table.rules { width: 100%; border-collapse: collapse; }
+table.rules td { padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.rules td:first-child { color: var(--soft); width: 45%; }
+table.rules td:last-child { font-weight: 600; }
+.hidden { display: none !important; }
+footer { margin-top: 32px; font-size: 13px; color: var(--soft); }
+{% if mode == "print" %}
+@page { size: A4; margin: 16mm 15mm; }
+body { background: #fff; font-size: 13px; }
+.wrap { max-width: none; padding: 0; }
+.page { break-after: page; }
+.page:last-child { break-after: auto; }
+.card { border: 0; background: none; padding: 0; margin: 0; }
+.card h2 { font-size: 26px; margin: 6px 0 10px; }
+.pbox pre { font-size: 12px; }
+.week { width: 100%; border-collapse: collapse; margin: 18px 0 24px; }
+.week td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 14px; }
+.week td:first-child { font-family: var(--display); color: var(--accent); font-weight: 600; width: 60px; }
+.copy, .search, .tabs { display: none; }
+{% endif %}
+.plabel{font-size:14px;font-weight:600;margin:14px 0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+{% if mode == "print" %}
+<section class="page">
+  <div class="kicker">{{ ws.client }} · {{ L.start_here }}</div>
+  <h1 style="font-size:34px;margin:8px 0 4px">{{ L.first_week }}</h1>
+  <table class="week">
+    {% for line in ws.first_week %}<tr><td>{{ L.days[loop.index0] if loop.index0 < L.days|length else loop.index }}</td><td>{{ line }}</td></tr>{% endfor %}
+  </table>
+  <h3 style="font-size:20px;margin-bottom:8px">{{ L.rules }}</h3>
+  <table class="rules">
+    {% for r in rules %}<tr><td>{{ r['if'] }}</td><td>{{ r.then }}</td></tr>{% endfor %}
+  </table>
+  {% if ws.drive_link %}<footer>{{ ws.drive_link }}</footer>{% endif %}
+</section>
+{% for x in exercises %}
+<section class="page card">
+  <div class="kicker">{{ L.exercise }} {{ x.num }} · {{ x.minutes }} {{ L.minutes }} · {{ L.rule }}: {{ x.rule_then }}</div>
+  <h2>{{ x.title }}</h2>
+  <h3 style="font-size:16px">{{ L.steps }}</h3>
+  <ol class="steps">{% for s in x.steps %}<li>{{ s }}</li>{% endfor %}</ol>
+  {% for p in x.prompts %}<h3 style="font-size:16px">{{ prompt_label(L, x.prompt_labels[loop.index0], loop.index, x.prompts|length) }}</h3><div class="pbox"><pre>{{ p }}</pre></div>{% endfor %}
+  <p class="done-when"><b>{{ L.done_when }}:</b> {{ x.done_when }}</p>
+  {% if x.note %}<p class="note"><b>{{ L.note }}:</b> {{ x.note }}</p>{% endif %}
+  {% if x.data %}<div class="files">{{ L.exercises }}/{{ x.folder }}/{{ L.data }}/ · {{ x.data|join(", ") }}</div>{% endif %}
+</section>
+{% endfor %}
+{% else %}
+<header>
+  <div class="kicker">{{ ws.client }}</div>
+  <h1>{{ L.prompts|capitalize }}</h1>
+</header>
+<input class="search" id="q" type="search" placeholder="{{ L.search }}" aria-label="{{ L.search }}">
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="ex">{{ L.exercises_title }}</button>
+  <button role="tab" aria-selected="false" data-tab="rules">{{ L.base_prompts }}</button>
+</div>
+<div data-panel="ex">
+{% for x in exercises %}
+  <article class="card" data-search>
+    <div class="meta"><h2>{{ L.exercise }} {{ x.num }} · {{ x.title }}</h2><span class="tag">{{ x.minutes }} {{ L.minutes }} · <b>{{ x.rule_then }}</b></span></div>
+    <ol class="steps">{% for s in x.steps %}<li>{{ s }}</li>{% endfor %}</ol>
+    {% for p in x.prompts %}{% if x.prompts|length > 1 %}<h3 class="plabel">{{ prompt_label(L, x.prompt_labels[loop.index0], loop.index, x.prompts|length) }}</h3>{% endif %}<div class="pbox"><pre>{{ p }}</pre><button class="copy" type="button">{{ L['copy'] }}</button></div>{% endfor %}
+    <p class="done-when"><b>{{ L.done_when }}:</b> {{ x.done_when }}</p>
+    {% if x.note %}<p class="note"><b>{{ L.note }}:</b> {{ x.note }}</p>{% endif %}
+  </article>
+{% endfor %}
+</div>
+<div data-panel="rules" class="hidden">
+{% for r in rules %}
+  <article class="card" data-search>
+    <div class="tag">{{ r['if'] }}</div>
+    <h2 style="font-size:19px;margin-top:4px">{{ r.then }}</h2>
+    {% if r.prompt %}<div class="pbox"><pre>{{ r.prompt }}</pre><button class="copy" type="button">{{ L['copy'] }}</button></div>{% endif %}
+  </article>
+{% endfor %}
+</div>
+{% if ws.drive_link %}<footer>{{ ws.drive_link }}</footer>{% endif %}
+<script>
+const COPIED = {{ L.copied|tojson }}, COPY = {{ L['copy']|tojson }};
+// execCommand runs inside the click, so it works from file:// and never waits on a permission prompt;
+// navigator.clipboard is the fallback because its promise can hang.
+function copyText(t) {
+  const ta = document.createElement("textarea");
+  ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  ta.remove();
+  if (!ok && navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+}
+document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+  copyText(b.previousElementSibling.textContent);
+  b.textContent = COPIED + " ✓"; b.classList.add("done");
+  setTimeout(() => { b.textContent = COPY; b.classList.remove("done"); }, 1800);
+}));
+document.querySelectorAll(".tabs button").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === t));
+  document.querySelectorAll("[data-panel]").forEach(p => p.classList.toggle("hidden", p.dataset.panel !== t.dataset.tab));
+}));
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+document.getElementById("q").addEventListener("input", e => {
+  const q = norm(e.target.value);
+  document.querySelectorAll("[data-search]").forEach(c => c.classList.toggle("hidden", q && !norm(c.textContent).includes(q)));
+});
+</script>
+{% endif %}
+</div>
+</body>
+</html>
