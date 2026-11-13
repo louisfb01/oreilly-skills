@@ -10,7 +10,7 @@ By [Louis-François Bouchard](https://www.louisbouchard.ai/), CTO and co-founder
 | --- | --- | --- |
 | 1 · Nov 10, 2026 | [How I build talks with Claude](weeks/01-how-i-build-talks/) | The [`talk-decks`](skills/talk-decks/) skill, a prompt to build your own from your past threads, and the [slides (PDF)](weeks/01-how-i-build-talks/how-i-build-talks-with-claude-slides.pdf) From Lucas: the [`workshop-kit`](skills/workshop-kit/) skill |
 | 2 · Nov 17, 2026 | [A second brain my agents can read](weeks/02-second-brain/) | Points to [obsidian-agent-vault-template](https://github.com/louisfb01/obsidian-agent-vault-template), a ready-to-use vault with rules, skills and a feedback loop |
-| 3 | Coming soon | |
+| 3 · Nov 24, 2026 | [Artifacts mastermind](weeks/03-artifacts/) | The [`html-prototypes`](skills/html-prototypes/) skill: custom HTML pages and review pages your agent builds and reads back |
 | 4 | Coming soon | |
 | 5 | Coming soon | |
 | 6 | Coming soon | |
