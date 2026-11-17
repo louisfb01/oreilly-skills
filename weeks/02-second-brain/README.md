@@ -2,7 +2,7 @@
 
 O'Reilly Skills Live, Nov 17, 2026. How I keep my notes, rules and skills in one Obsidian vault that Claude Code, Codex and scheduled tasks all read from and write back to.
 
-**Slides:** [A second brain my agents can read (PDF, 20 slides)](second-brain-my-agents-can-read-slides.pdf)
+**Slides:** [A second brain my agents can read (PDF, 21 slides)](second-brain-my-agents-can-read-slides.pdf)
 
 **This week's material has its own repo:** [louisfb01/obsidian-agent-vault-template](https://github.com/louisfb01/obsidian-agent-vault-template)
 
