@@ -52,7 +52,7 @@ Anything that must keep running, update itself or carry real users is no longer 
 2. **No React, no build step.** Simon Willison: "I prompt “no react” and skip that whole rabbit hole entirely."
 3. **Keep it small.** A few hundred lines that any model can reread and change later.
 4. **Libraries only when they earn it,** from a CDN with the exact version in the URL. Check which CDNs the host allows.
-5. **Phone and desktop.** It works at 390 px wide with 16 px side gutters and no horizontal scroll, and at desktop width.
+5. **Phone and desktop.** It works at 390 px wide with 16 px side gutters and no horizontal scroll, and at desktop width. Build the phone layout every time, without being asked, and check it at 390 px before handing over.
 6. **Tokens for color and type.** Define light and dark tokens when the host has themes, and check contrast in both.
 7. **Real data, or labelled sample data.** Use real numbers and sources when they exist. A mock says it is a mock. Numbers on the page agree with each other, and every link goes somewhere real.
 8. **Copy and paste as the main input and output.** Add "Copy" buttons; copying by hand on a phone is fiddly.
@@ -73,6 +73,8 @@ Anything that must keep running, update itself or carry real users is no longer 
 23. **Nothing moves on its own without a switch.** Auto-tours, auto-zoom and auto-scroll get a visible on/off toggle, off by default. Side panels can be closed and reopened.
 24. **A visual page has to look finished.** On a map, a board or a world, every shape stands for something real: no placeholder circles or squares. Check that every effect is actually visible in the render.
 25. **Numbers come with a window and a comparison.** Analytics offer 1 h, 24 h, 7 d, 30 d and a custom range, each comparable with the previous window and a rolling average.
+26. **Editable three ways.** In place (click any text and type), by a comment to the agent on the page (a Claude artifact's comments go straight to Claude), or in batch (keep / revise / remove and a note per item, applied in one round). Pick the one that fits the task.
+27. **Easy to share with anyone, human or AI.** A link for people, a PowerPoint, PDF or CSV download for a team, a "Copy" (Markdown or JSON) for any other AI, and notes saved where the agent reads them back.
 
 ## Review pages
 

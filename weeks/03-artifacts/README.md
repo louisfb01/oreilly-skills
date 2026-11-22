@@ -12,7 +12,7 @@ An artifact is one HTML file your agent writes for you. Because the agent can re
 2. **You react on the page**: keep, revise, remove, a note per item, often dictated.
 3. **The agent reads it back** and makes the next round at the same link.
 
-The skill covers when a page beats a chat answer, 25 build rules (one file, no React, phone and desktop, real data, a copy button, start plain), how to build a review page, other patterns, and what to check before the page reaches you.
+The skill covers when a page beats a chat answer, 27 build rules (one file, no React, phone and desktop, real data, a copy button, start plain), how to build a review page, other patterns, and what to check before the page reaches you.
 
 ## Use it
 
