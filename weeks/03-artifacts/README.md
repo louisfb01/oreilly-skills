@@ -2,6 +2,8 @@
 
 O'Reilly Skills Live, Nov 24, 2026. Why I ask my agent for a custom page for almost everything I work on, and the rules that make those pages good: review pages for my decks, a board I present from, a 3D plan of a room, trackers.
 
+**Slides:** [Artifacts mastermind (PDF, 22 slides)](artifacts-mastermind-slides.pdf)
+
 **Skill:** [`html-prototypes`](../../skills/html-prototypes/). It's a general version of the skill behind every page I build. It works with Claude artifacts, ChatGPT sites from Codex, or any agent that can write an HTML file.
 
 ## The idea
